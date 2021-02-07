@@ -9,6 +9,19 @@
 Github action/CI Plugin to minify html, javascript and css files, using [minify](https://www.npmjs.com/package/minify).
 
 ## Usage
+### Github Action
+Please refer [action.yml](action.yml) for parameters.
+
+```yaml
+steps:
+  - name: HTML/CSS/JS Minifier
+    uses: devatherock/minify-js@v1.0.1
+    with:
+      directory: 'src'      # Optional
+      output: 'minify/src'  # Optional
+      add_suffix: false     # Optional
+```
+
 ### Docker
 ```shell
 docker run --rm \
@@ -20,5 +33,5 @@ docker run --rm \
   devatherock/minify-js:latest
 ```
 
-### CI
+### vela/CircleCI
 Please refer [docs](DOCS.md)

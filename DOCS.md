@@ -1,16 +1,3 @@
-## Github Action
-Please refer [action.yml](action.yml) for parameters.
-
-```yaml
-steps:
-  - name: HTML/CSS/JS Minifier
-    uses: devatherock/minify-js@v1.0.1
-    with:
-      directory: 'src'      # Optional
-      output: 'minify/src'  # Optional
-      add_suffix: false     # Optional
-```
-
 ## vela
 The following parameters can be set to configure the plugin.
 
