@@ -1,4 +1,4 @@
-name: 'minify-js'
+name: 'minify'
 description: 'Github action to minify html, javascript and css files'
 
 inputs:

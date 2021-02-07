@@ -3,7 +3,7 @@ Please refer [action.yml](action.yml) for parameters.
 
 ```yaml
 steps:
-  - name: minify-js
+  - name: minify
     uses: devatherock/minify-js@v1.0.1
     with:
       directory: 'src'      # Optional
