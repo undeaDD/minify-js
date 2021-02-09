@@ -1,4 +1,5 @@
 name: 'HTML/CSS/JS Minifier'
+author: devatherock
 description: 'Github action to minify html, javascript and css files'
 
 inputs:
@@ -14,8 +15,8 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://devatherock/minify-js:1.0.2'
 
 branding:
-  icon: "box"
-  color: "green"
+  icon: "minimize"
+  color: "orange"
