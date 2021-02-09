@@ -33,7 +33,7 @@ class MinifyJsDockerSpec extends Specification {
     ]
 
     @Shared
-    String imageName = 'devatherock/minify-js:latest'
+    String imageName = "devatherock/minify-js:${System.getenv('DOCKER_TAG') ?: 'latest'}"
 
     void setupSpec() {
         ProcessUtil.executeCommand("docker pull ${imageName}")
