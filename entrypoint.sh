@@ -64,11 +64,8 @@ case $INPUT_PATH in
   *) INPUT_PATH="$INPUT_PATH/" ;;
   esac
 
-  # If output path is not specified, use the input path itself
-  if [ -z "$OUTPUT_PATH" ]; then
-    OUTPUT_PATH=$INPUT_PATH
-  else
-    # If output path does not end with /, append it
+  # If output path does not end with /, append it
+  if [ ! -z "$OUTPUT_PATH" ]; then
     case $OUTPUT_PATH in
     *"/") ;;
     *) OUTPUT_PATH="$OUTPUT_PATH/" ;;

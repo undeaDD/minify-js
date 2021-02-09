@@ -34,3 +34,10 @@ docker run --rm \
 
 ### vela/CircleCI
 Please refer [docs](DOCS.md)
+
+## Tests
+To test the latest plugin image, run the below command
+
+```shell
+./gradlew test
+```
