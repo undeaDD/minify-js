@@ -1,6 +1,6 @@
 slack_image: &slack_image
   docker:
-    - image: devatherock/simple-slack:0.5.0
+    - image: devatherock/simple-slack:0.7.0
       auth:
         username: $DOCKER_USERNAME
         password: $DOCKER_PASSWORD
@@ -23,6 +23,13 @@ executors:
 
 version: 2.1
 jobs:
+  docker_build_dry_run:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker build .
+
   publish:
     executor: docker-executor
     steps:
@@ -36,6 +43,26 @@ jobs:
           docker push devatherock/minify-js:$TAG
           docker push devatherock/minify-js:latest
           
+  functional_test:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/minify-js
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run: |
+          ./gradlew test
+      - store_test_results:
+          path: build/test-results
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+          
   publish_release:
     executor: docker-executor
     steps:
@@ -47,14 +74,7 @@ jobs:
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker pull devatherock/minify-js:$DEV_TAG
           docker tag devatherock/minify-js:$DEV_TAG devatherock/minify-js:$TAG
-          docker push devatherock/minify-js:$TAG 
-
-  docker_build_dry_run:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run: docker build .
+          docker push devatherock/minify-js:$TAG
 
   notify:
     <<: *slack_image
@@ -77,12 +97,17 @@ workflows:
           filters:
             branches:
               only: master
+      - functional_test:
+          context:
+            - docker-credentials
+          requires:
+            - publish
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - functional_test
   release:
     jobs:
       - publish_release:

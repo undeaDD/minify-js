@@ -9,7 +9,15 @@ Github action/CI Plugin to minify html, javascript and css files, using [minify]
 
 ## Usage
 ### Github Action
-Please refer [action.yml](action.yml) for parameters.
+The following parameters can be set to configure the action.
+
+*   **directory** - File to minify or a folder containing files to minify. By default, all files in current folder and
+  its sub-folders will be minified
+
+*   **output** - Path where the minified files will be saved. By default, the minified files will be saved in the
+  original file path
+
+*   **add_suffix** - Indicates if the output files should have the suffix `.min` added after the name. Default is true
 
 ```yaml
 jobs:
@@ -17,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest      # Docker-based github actions have to run on a linux environment
     steps:
       - name: HTML/CSS/JS Minifier
-        uses: docker://devatherock/minify-js:latest   # To use a specific release, use a docker tag like 1.0.2 instead of latest
+        uses: docker://devatherock/minify-js:1.0.2
         with:
           directory: 'src'      # Optional
           output: 'minify/src'  # Optional
@@ -25,6 +33,7 @@ jobs:
 ```
 
 ### Docker
+
 ```shell
 docker run --rm \
   -v "/path/to/files":/work \
@@ -32,11 +41,50 @@ docker run --rm \
   -e PARAMETER_INPUT_PATH=/work/src \
   -e PARAMETER_OUTPUT_PATH=/work/minify/src \
   -e PARAMETER_ADD_SUFFIX=false \
-  devatherock/minify-js:latest
+  devatherock/minify-js:1.0.2
 ```
 
-### vela/CircleCI
-Please refer [docs](DOCS.md)
+### vela
+The following parameters can be set to configure the plugin.
+
+*   **input_path** - File to minify or a folder containing files to minify. By default, all files in current folder and
+  its sub-folders will be minified
+
+*   **output_path** - Path where the minified files will be saved. By default, the minified files will be saved in the
+  original file path
+
+*   **add_suffix** - Indicates if the output files should have the suffix `.min` added after the name. Default is true
+
+```yaml
+steps:
+  - name: minify_js
+    ruleset:
+      branch: master
+      event: push
+    image: devatherock/minify-js:1.0.2
+    parameters:
+      input_path: src
+      output_path: minify/src
+      add_suffix: false
+```
+
+### CircleCI
+
+```yaml
+version: 2.1
+jobs:
+  minify_js:
+    docker:
+      - image: devatherock/minify-js:1.0.2
+    working_directory: ~/my-repo
+    environment:
+      PARAMETER_INPUT_PATH: src
+      PARAMETER_OUTPUT_PATH: minify/src
+      PARAMETER_ADD_SUFFIX: false
+    steps:
+      - checkout
+      - run: sh /entrypoint.sh
+```
 
 ## Tests
 To test the latest plugin image, run the below command
