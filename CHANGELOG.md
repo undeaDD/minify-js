@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Functional tests to CI pipeline
+
 ## [1.0.2] - 2021-02-08
 ### Added
 - test: Added tests to test the final docker image
