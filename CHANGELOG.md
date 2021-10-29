@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.3] - 2021-10-27
 ### Added
 - Functional tests to CI pipeline
 
