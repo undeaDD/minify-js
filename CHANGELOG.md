@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- Updated dockerhub readme in CI pipeline
+
 ## [1.0.3] - 2021-10-27
 ### Added
 - Functional tests to CI pipeline
