@@ -19,7 +19,17 @@ executors:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
     <<: *resource_class
-    <<: *work_directory  
+    <<: *work_directory
+  machine-executor:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    resource_class: medium
+    <<: *work_directory
+  arm-executor:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    <<: *work_directory
 
 version: 2.1
 jobs:
@@ -28,7 +38,11 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build .
+      - run: |
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 .
 
   publish:
     executor: docker-executor
@@ -37,15 +51,17 @@ jobs:
       - setup_remote_docker
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/minify-js:$TAG .
-          docker tag devatherock/minify-js:$TAG devatherock/minify-js:latest
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/minify-js:$TAG
-          docker push devatherock/minify-js:latest
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t devatherock/minify-js:$TAG \
+            -t devatherock/minify-js:latest .
           
   dockerhub_readme:
-    machine:
-      image: ubuntu-2204:2023.04.2
+    executor: machine-executor
     steps:
       - checkout
       - run: |
@@ -58,8 +74,10 @@ jobs:
               peterevans/dockerhub-description:3.4.1
           
   functional_test:
-    machine:
-      image: ubuntu-2004:202010-01
+    parameters:
+      runner:
+        type: executor
+    executor: << parameters.runner >>
     steps:
       - checkout
       - attach_workspace:
@@ -85,10 +103,11 @@ jobs:
       - run: |
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker pull devatherock/minify-js:$DEV_TAG
-          docker tag devatherock/minify-js:$DEV_TAG devatherock/minify-js:$TAG
-          docker push devatherock/minify-js:$TAG
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx imagetools create \
+            -t devatherock/minify-js:$TAG devatherock/minify-js:$DEV_TAG
 
   notify:
     <<: *slack_image
@@ -118,8 +137,17 @@ workflows:
           requires:
             - publish
       - functional_test:
+          name: functional_test_amd
           context:
             - docker-credentials
+          runner: machine-executor  
+          requires:
+            - publish
+      - functional_test:
+          name: functional_test_arm
+          context:
+            - docker-credentials
+          runner: arm-executor
           requires:
             - dockerhub_readme
       - notify:
@@ -127,7 +155,8 @@ workflows:
             - docker-credentials
             - slack-webhook
           requires:
-            - functional_test
+            - functional_test_amd
+            - functional_test_arm
             
   release:
     jobs:
