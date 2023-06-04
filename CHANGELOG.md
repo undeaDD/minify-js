@@ -4,6 +4,7 @@
 ### Changed
 - Updated dockerhub readme in CI pipeline
 - [#7](https://github.com/devatherock/minify-js/issues/7): Built a multi-arch docker image
+- Upgraded gradle to 7 and spock to 2.3, to fix test failures in Java 17
 
 ## [1.0.3] - 2021-10-27
 ### Added
