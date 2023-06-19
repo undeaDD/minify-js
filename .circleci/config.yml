@@ -1,23 +1,24 @@
+docker_auth: &docker_auth
+  auth:
+    username: $DOCKER_USERNAME
+    password: $DOCKER_PASSWORD
+
 slack_image: &slack_image
   docker:
-    - image: devatherock/simple-slack:0.7.0
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
+    - image: devatherock/simple-slack:1.0.0
+      <<: *docker_auth
 
 work_directory: &work_directory
   working_directory: ~/minify-js
 
 resource_class: &resource_class
   resource_class: small
-  
+
 executors:
   docker-executor:
     docker:
       - image: cimg/openjdk:11.0
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+        <<: *docker_auth
     <<: *resource_class
     <<: *work_directory
   machine-executor:
@@ -33,16 +34,20 @@ executors:
 
 version: 2.1
 jobs:
-  docker_build_dry_run:
-    executor: docker-executor
+  fast_functional_test:
+    executor: arm-executor
     steps:
       - checkout
-      - setup_remote_docker
+      - attach_workspace:
+          at: ~/minify-js
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
       - run: |
-          docker buildx create --name rockbuilder \
-            --driver docker-container --use --bootstrap
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 .
+          make docker-build test skip_pull=true
+      - store_test_results:
+          path: build/test-results
 
   publish:
     executor: docker-executor
@@ -59,7 +64,7 @@ jobs:
             --push \
             -t devatherock/minify-js:$TAG \
             -t devatherock/minify-js:latest .
-          
+
   dockerhub_readme:
     executor: machine-executor
     steps:
@@ -72,7 +77,7 @@ jobs:
               -e SHORT_DESCRIPTION='Github action/CI Plugin to minify html, javascript and css files' \
               -e README_FILEPATH='/workspace/README.md' \
               peterevans/dockerhub-description:3.4.1
-          
+
   functional_test:
     parameters:
       runner:
@@ -94,7 +99,7 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
-          
+
   publish_release:
     executor: docker-executor
     steps:
@@ -140,7 +145,7 @@ workflows:
           name: functional_test_amd
           context:
             - docker-credentials
-          runner: machine-executor  
+          runner: machine-executor
           requires:
             - publish
       - functional_test:
@@ -157,7 +162,7 @@ workflows:
           requires:
             - functional_test_amd
             - functional_test_arm
-            
+
   release:
     jobs:
       - publish_release:
@@ -174,9 +179,10 @@ workflows:
             - slack-webhook
           requires:
             - publish_release
+
   pr_check:
     jobs:
-      - docker_build_dry_run:
+      - fast_functional_test:
           context:
             - docker-credentials
           filters:
