@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [2.0.0] - 2023-06-04
 ### Changed
 - Updated dockerhub readme in CI pipeline
 - [#7](https://github.com/devatherock/minify-js/issues/7): Built a multi-arch docker image

@@ -36,7 +36,9 @@ class MinifyJsDockerSpec extends Specification {
     String imageName = "devatherock/minify-js:${System.getenv('DOCKER_TAG') ?: 'latest'}"
 
     void setupSpec() {
-        ProcessUtil.executeCommand("docker pull ${imageName}")
+        if (!System.getenv('SKIP_PULL') || !'true'.equalsIgnoreCase(System.getenv('SKIP_PULL'))) {
+            ProcessUtil.executeCommand("docker pull ${imageName}")
+        }
     }
 
     void 'test minify - entire workspace provided'() {
