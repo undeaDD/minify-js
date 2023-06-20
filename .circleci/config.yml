@@ -66,17 +66,21 @@ jobs:
             -t devatherock/minify-js:latest .
 
   dockerhub_readme:
-    executor: machine-executor
+    docker:
+      - image: peterevans/dockerhub-description:3.4.1
+        <<: *docker_auth
+    <<: *resource_class
+    <<: *work_directory
+    environment:
+      DOCKERHUB_REPOSITORY: 'devatherock/minify-js'
+      SHORT_DESCRIPTION: 'Github action/CI Plugin to minify html, javascript and css files'
+      README_FILEPATH: /root/minify-js/README.md
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/minify-js
       - run: |
-          docker run -v $PWD:/workspace \
-              -e DOCKERHUB_USERNAME \
-              -e DOCKERHUB_PASSWORD \
-              -e DOCKERHUB_REPOSITORY='devatherock/minify-js' \
-              -e SHORT_DESCRIPTION='Github action/CI Plugin to minify html, javascript and css files' \
-              -e README_FILEPATH='/workspace/README.md' \
-              peterevans/dockerhub-description:3.4.1
+          cd / && sh /entrypoint.sh
 
   functional_test:
     parameters:
