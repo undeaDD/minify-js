@@ -2,3 +2,7 @@
 *.iml
 .gradle
 build/
+bin/test
+node_modules
+.settings
+.classpath

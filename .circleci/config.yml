@@ -17,7 +17,7 @@ resource_class: &resource_class
 executors:
   docker-executor:
     docker:
-      - image: cimg/openjdk:11.0
+      - image: cimg/node:20.10.0
         <<: *docker_auth
     <<: *resource_class
     <<: *work_directory
@@ -54,7 +54,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - attach_workspace:
+          at: ~/minify-js
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-      
       - run: |
+          npm install
           TAG=${CIRCLE_SHA1:0:8}
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker buildx create --name rockbuilder \
@@ -64,6 +71,10 @@ jobs:
             --push \
             -t devatherock/minify-js:$TAG \
             -t devatherock/minify-js:latest .
+      - save_cache:
+          paths:
+            - ~/node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}      
 
   dockerhub_readme:
     docker:

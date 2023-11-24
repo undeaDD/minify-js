@@ -55,9 +55,9 @@ class MinifyJsDockerSpec extends Specification {
 
         then:
         output[0] == 0
-        output[1].contains('Minified ./src/test/resources/static/index.html > ./src/test/resources/static/index.min.html')
-        output[1].contains('Minified ./src/test/resources/static/main.css > ./src/test/resources/static/main.min.css')
-        output[1].contains('Minified ./src/test/resources/scripts/scripts.js > ./src/test/resources/scripts/scripts.min.js')
+        output[1].contains('Minified /work/src/test/resources/static/index.html > /work/src/test/resources/static/index.min.html')
+        output[1].contains('Minified /work/src/test/resources/static/main.css > /work/src/test/resources/static/main.min.css')
+        output[1].contains('Minified /work/src/test/resources/scripts/scripts.js > /work/src/test/resources/scripts/scripts.min.js')
         new File(outputHtmlFile).text ==
                 '<!doctype html><title>Test title</title><div id=layout><div id=main><div class=header><h1>Test body</h1></div></div></div>\n'
         new File(outputJsFile).text ==
