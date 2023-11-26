@@ -19,17 +19,22 @@ The following parameters can be set to configure the action.
 
 *   **add_suffix** - Indicates if the output files should have the suffix `.min` added after the name. Default is true
 
+*   **inclusions** -  Multi-line string, each line of which contains a regex representing files/paths within the input directory to include/minify. By default, all files in the input directory will be minified
+
 ```yaml
 jobs:
   build:
     runs-on: ubuntu-latest      # Docker-based github actions have to run on a linux environment
     steps:
       - name: HTML/CSS/JS Minifier
-        uses: docker://devatherock/minify-js:2.0.0
+        uses: docker://devatherock/minify-js:3.0.0
         with:
           directory: 'src'      # Optional
           output: 'minify/src'  # Optional
           add_suffix: false     # Optional
+          inclusions: |-        # Optional
+            .*assets.*
+            .*static/index.html
 ```
 
 ### Docker
@@ -41,7 +46,8 @@ docker run --rm \
   -e PARAMETER_INPUT_PATH=/work/src \
   -e PARAMETER_OUTPUT_PATH=/work/minify/src \
   -e PARAMETER_ADD_SUFFIX=false \
-  devatherock/minify-js:2.0.0
+  -e PARAMETER_INCLUSIONS=".*assets.*\n.*static/index.html" \
+  devatherock/minify-js:3.0.0
 ```
 
 ### vela
@@ -55,17 +61,22 @@ The following parameters can be set to configure the plugin.
 
 *   **add_suffix** - Indicates if the output files should have the suffix `.min` added after the name. Default is true
 
+*   **inclusions** -  Multi-line string, each line of which contains a regex representing files to include/minify. By default, all files in the input directory will be minified
+
 ```yaml
 steps:
   - name: minify_js
     ruleset:
       branch: master
       event: push
-    image: devatherock/minify-js:2.0.0
+    image: devatherock/minify-js:3.0.0
     parameters:
       input_path: src
       output_path: minify/src
       add_suffix: false
+      inclusions: |-
+        .*assets.*
+        .*static/index.html
 ```
 
 ### CircleCI
@@ -75,12 +86,13 @@ version: 2.1
 jobs:
   minify_js:
     docker:
-      - image: devatherock/minify-js:2.0.0
+      - image: devatherock/minify-js:3.0.0
     working_directory: ~/my-repo
     environment:
       PARAMETER_INPUT_PATH: src
       PARAMETER_OUTPUT_PATH: minify/src
       PARAMETER_ADD_SUFFIX: false
+      PARAMETER_INCLUSIONS: '.*assets.*\n.*static/index.html'
     steps:
       - checkout
       - run: sh /entrypoint.sh

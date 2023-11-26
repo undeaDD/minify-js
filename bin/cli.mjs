@@ -8,6 +8,7 @@ import { stringToBoolean, valueFromEnvVariables, getLogger } from '../lib/utils.
 const inputPathVariables = ['PLUGIN_INPUT_PATH', 'PARAMETER_INPUT_PATH', 'INPUT_DIRECTORY']
 const outputPathVariables = ['PLUGIN_OUTPUT_PATH', 'PARAMETER_OUTPUT_PATH', 'INPUT_OUTPUT']
 const addSuffixVariables = ['PLUGIN_ADD_SUFFIX', 'PARAMETER_ADD_SUFFIX', 'INPUT_ADD_SUFFIX']
+const inclusionsVariables = ['PLUGIN_INCLUSIONS', 'PARAMETER_INCLUSIONS', 'INPUT_INCLUSIONS']
 
 const options = yargs(hideBin(process.argv))
   .option('input-path', {
@@ -28,14 +29,29 @@ const options = yargs(hideBin(process.argv))
     description: 'Indicates if the output files should have the suffix `.min` added after the name',
     default: valueFromEnvVariables(addSuffixVariables) ? stringToBoolean(valueFromEnvVariables(addSuffixVariables)) : true
   })
+  .option('inclusions', {
+    type: 'string',
+    description: 'Multi-line string, each line of which contains a regex representing files to include/minify',
+    default: valueFromEnvVariables(inclusionsVariables)
+  })
   .parse()
 
 const inputPath = options.i
 const outputPath = options.o
 const addSuffix = options.a
+var inclusions = []
+
+if (options.inclusions) {
+  const inclusionParts = options.inclusions.replace('\\n', '\n').split(/[\r\n]+/)
+  getLogger().debug('Inclusions: ', inclusionParts)
+
+  for (var index = 0; index < inclusionParts.length; index++) {
+    inclusions.push(RegExp(inclusionParts[index]))
+  }
+}
 
 if (fs.existsSync(inputPath)) {
-  minifyFiles(inputPath, addSuffix, outputPath)
+  minifyFiles(inputPath, addSuffix, outputPath, inclusions)
 } else {
   getLogger().error('Input path ', inputPath, " doesn't exist")
 }
