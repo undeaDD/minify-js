@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- [#5](https://github.com/devatherock/minify-js/issues/5): Ability to minify only specific files within the input directory
+
+### Changed
+- Rewrote the shell script in Node JS
 
 ## [2.0.0] - 2023-06-04
 ### Changed
