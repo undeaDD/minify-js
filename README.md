@@ -95,7 +95,7 @@ jobs:
       PARAMETER_INCLUSIONS: '.*assets.*\n.*static/index.html'
     steps:
       - checkout
-      - run: sh /entrypoint.sh
+      - run: node /app/bin/cli.mjs
 ```
 
 ## Tests

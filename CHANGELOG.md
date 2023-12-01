@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.0.0] - 2023-11-26
 ### Added
 - [#5](https://github.com/devatherock/minify-js/issues/5): Ability to minify only specific files within the input directory
 
